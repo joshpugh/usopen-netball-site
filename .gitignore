@@ -5,3 +5,7 @@ next-env.d.ts
 
 # Scraper output: regenerated every 10 minutes and published to GitHub Pages.
 data
+.vercel
+
+# TypeScript incremental build cache
+tsconfig.tsbuildinfo

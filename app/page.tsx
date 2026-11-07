@@ -90,7 +90,7 @@ export default async function Home() {
             </div>
             <div style={{ marginTop: 32, display: "grid", gap: 12 }}>
               <h3 className="subhead">Meet the 2026 teams</h3>
-              <div className="video" style={{ maxWidth: 960 }}><iframe src={`https://www.youtube-nocookie.com/embed/${STREAMS.meetTheTeams}`} title="Meet your 2026 U.S. Open Netball Championships teams" loading="lazy" allow="encrypted-media; picture-in-picture" allowFullScreen /></div>
+              <div className="video" style={{ width: "100%", maxWidth: 960, marginInline: "auto" }}><iframe src={`https://www.youtube-nocookie.com/embed/${STREAMS.meetTheTeams}`} title="Meet your 2026 U.S. Open Netball Championships teams" loading="lazy" allow="encrypted-media; picture-in-picture" allowFullScreen /></div>
             </div>
           </div>
         </section>

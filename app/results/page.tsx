@@ -34,7 +34,7 @@ export default function Results() {
         <section className="section section--sunken" id="replays">
           <div className="wrap">
             <div className="sec-head"><p className="uso-eyebrow">Watch again</p><h2 className="sec-title">2025 broadcast</h2></div>
-            <div className="video" style={{ maxWidth: 960 }}><iframe src={`https://www.youtube-nocookie.com/embed/videoseries?list=${STREAMS.replaysPlaylist}`} title="2025 U.S. Open broadcast playlist" loading="lazy" allow="encrypted-media; picture-in-picture" allowFullScreen /></div>
+            <div className="video" style={{ width: "100%", maxWidth: 960, marginInline: "auto" }}><iframe src={`https://www.youtube-nocookie.com/embed/videoseries?list=${STREAMS.replaysPlaylist}`} title="2025 U.S. Open broadcast playlist" loading="lazy" allow="encrypted-media; picture-in-picture" allowFullScreen /></div>
           </div>
         </section>
 
