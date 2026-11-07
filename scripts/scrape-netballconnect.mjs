@@ -36,7 +36,11 @@ const pageUrl = (path, id) =>
   `&locked=1&hideFinder=1&hideRegionSwitcher=1&divisionId=${id}&column=long`;
 
 const MONTHS = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
-const OFFSETS = { PST: "-08:00", PDT: "-07:00", MST: "-07:00", MDT: "-06:00", CST: "-06:00", CDT: "-05:00", EST: "-05:00", EDT: "-04:00" };
+// The competition runs on Pacific time and we force the browser into it (see openPage),
+// so these are the only labels the page should ever render. Anything else means the
+// timezone override did not take, and the clock times cannot be trusted.
+const EVENT_TZ = "America/Los_Angeles";
+const OFFSETS = { PST: "-08:00", PDT: "-07:00" };
 
 // "Sat, Nov 7, 2026" + "08:00 AM (PST)" -> "2026-11-07T08:00:00-08:00"
 function toIso(dateText, timeText) {
@@ -47,14 +51,27 @@ function toIso(dateText, timeText) {
   if (!month) return undefined;
   let hour = Number(t[1]) % 12;
   if (/pm/i.test(t[3])) hour += 12;
+  // NetballConnect renders kick-off times in the BROWSER's timezone, not the venue's.
+  // A UTC runner reports an 08:00 PST game as 16:00; silently stamping -08:00 on that
+  // shifted every fixture 8 hours. Fail loudly instead -- the guards keep the last good file.
   const zone = (timeText.match(/\(([A-Z]{3,4})\)/) || [])[1];
+  if (zone && !OFFSETS[zone]) {
+    throw new Error(`time "${timeText}" is in ${zone}, not Pacific - the ${EVENT_TZ} override did not apply`);
+  }
   const offset = OFFSETS[zone] || "-08:00";
   const pad = (n) => String(n).padStart(2, "0");
   return `${d[3]}-${pad(month)}-${pad(Number(d[2]))}T${pad(hour)}:${t[2]}:00${offset}`;
 }
 
 async function openPage(browser, url) {
-  const page = await browser.newPage({ viewport: { width: 1680, height: 1000 } });
+  // timezoneId is load-bearing: the page renders match times in the browser's zone, so
+  // without this a UTC CI runner publishes every kick-off 8 hours late. locale keeps the
+  // 12-hour "02:15 PM" format the parser expects.
+  const page = await browser.newPage({
+    viewport: { width: 1680, height: 1000 },
+    timezoneId: EVENT_TZ,
+    locale: "en-US",
+  });
   await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
   return page;
 }
