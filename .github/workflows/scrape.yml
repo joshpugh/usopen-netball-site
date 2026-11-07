@@ -1,0 +1,73 @@
+# Scrapes NetballConnect every 10 minutes and publishes the JSON to GitHub Pages.
+#
+# Pages, not a commit, on purpose: this repo is connected to Vercel, and committing
+# data every 10 minutes would trigger ~144 deployments a day. Publishing to Pages
+# touches no branch, so it can never trigger a build.
+#
+# Enable once, under Settings -> Pages -> Build and deployment -> Source: GitHub Actions.
+name: Scrape NetballConnect
+
+on:
+  schedule:
+    - cron: "*/10 * * * *" # GitHub's floor is 5 min, and scheduled runs can be delayed under load
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two scrapes publish at once, but don't cancel one mid-flight either.
+concurrency:
+  group: scrape-netballconnect
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+
+      # The scraper's "only write on change" and "never regress" guards compare against
+      # the last good file. A fresh checkout has none, so pull the currently published
+      # copies down first. Failures here are fine: a first run simply has no baseline.
+      - name: Seed last published data
+        continue-on-error: true
+        run: |
+          mkdir -p data
+          base="https://${GITHUB_REPOSITORY%%/*}.github.io/${GITHUB_REPOSITORY#*/}"
+          for f in ladder-ladies ladder-mixed fixtures-ladies fixtures-mixed; do
+            curl -fsS --max-time 20 -o "data/$f.json" "$base/$f.json" \
+              && echo "seeded $f" || echo "no baseline for $f"
+          done
+
+      - name: Scrape
+        run: node scripts/scrape-netballconnect.mjs
+
+      - name: Show what will be published
+        run: |
+          ls -la data
+          for f in data/*.json; do
+            echo "--- $f"
+            node -e 'const d=require("./"+process.argv[1]);
+              console.log("updated:",d.updated,"| division:",d.division,
+                d.teams?("| teams:"+d.teams.length):("| matches:"+d.matches.length+" played:"+d.matches.filter(m=>m.status==="final").length));' "$f"
+          done
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: data
+      - id: deploy
+        uses: actions/deploy-pages@v4
