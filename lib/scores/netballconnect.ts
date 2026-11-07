@@ -9,16 +9,19 @@ import type { Match, Pool, ScoresAdapter, ScoresPayload, Standing } from "./type
 // Nothing here calls api-netball.squadi.com. That endpoint 403s anything that isn't their
 // own site, and we don't forge Origin/Referer to get around it.
 
-const GH = "https://joshpugh.github.io/us-open-netball/data";
+// This repo's own Pages feed, published by .github/workflows/scrape.yml. Defaulting
+// here means a deploy needs only SCORES_PROVIDER=netballconnect set. Override any URL
+// to point at another host -- e.g. the original joshpugh.github.io/us-open-netball feed.
+const FEED = "https://joshpugh.github.io/usopen-netball-site";
 
 const LADDER = {
-  Ladies: process.env.NC_LADDER_LADIES_URL || `${GH}/ladies.json`,
-  Mixed: process.env.NC_LADDER_MIXED_URL || `${GH}/mixed.json`,
+  Ladies: process.env.NC_LADDER_LADIES_URL || `${FEED}/ladder-ladies.json`,
+  Mixed: process.env.NC_LADDER_MIXED_URL || `${FEED}/ladder-mixed.json`,
 } as const;
 
 const FIXTURES = {
-  Ladies: process.env.NC_FIXTURES_LADIES_URL || "",
-  Mixed: process.env.NC_FIXTURES_MIXED_URL || "",
+  Ladies: process.env.NC_FIXTURES_LADIES_URL || `${FEED}/fixtures-ladies.json`,
+  Mixed: process.env.NC_FIXTURES_MIXED_URL || `${FEED}/fixtures-mixed.json`,
 } as const;
 
 type Group = "Ladies" | "Mixed";
