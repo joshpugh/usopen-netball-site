@@ -10,8 +10,11 @@ const isMixed = (s: string) => /mixed/i.test(s);
 // Hide a broken one rather than showing the browser's broken-image icon.
 const hideBroken = (e: React.SyntheticEvent<HTMLImageElement>) => { e.currentTarget.style.visibility = "hidden"; };
 
-function MatchCard({ m }: { m: Match }) {
+// `now` is null until the client mounts: the server has no idea what time it is where
+// the reader is, and deciding "in progress" during SSR would mismatch on hydration.
+function MatchCard({ m, now }: { m: Match; now: number | null }) {
   const final = m.status === "final" && m.home.score != null && m.away.score != null;
+  const started = !final && now !== null && !!m.start && new Date(m.start).getTime() <= now;
   const hw = final && m.home.score! > m.away.score!;
   const aw = final && m.away.score! > m.home.score!;
   const rowCls = (won: boolean, lost: boolean) => `uso-match__row${won ? " uso-match__row--won" : ""}${lost ? " uso-match__row--lost" : ""}`;
@@ -19,7 +22,11 @@ function MatchCard({ m }: { m: Match }) {
     <article className="uso-match" aria-label={`${m.home.team} versus ${m.away.team}`}>
       <div className="uso-match__meta">
         <span>{[m.court, m.division, m.pool].filter(Boolean).join(" · ")}</span>
-        {final ? <span className="uso-badge uso-badge--final">Final</span> : <span className="uso-badge uso-badge--upcoming">{fmtTime(m.start) || "Upcoming"}</span>}
+        {final
+          ? <span className="uso-badge uso-badge--final">Final</span>
+          : started
+            ? <span className="uso-badge uso-badge--live">In progress</span>
+            : <span className="uso-badge uso-badge--upcoming">{fmtTime(m.start) || "Upcoming"}</span>}
       </div>
       <div className={rowCls(hw, aw)}><span className="uso-match__team">{m.home.team}</span><span className="uso-match__score">{m.home.score ?? "–"}</span></div>
       <div className={rowCls(aw, hw)}><span className="uso-match__team">{m.away.team}</span><span className="uso-match__score">{m.away.score ?? "–"}</span></div>
@@ -113,6 +120,14 @@ export function Scores({ initial }: { initial: ScoresPayload }) {
   const [data, setData] = useState(initial);
   const [group, setGroup] = useState<"Ladies" | "Mixed">("Ladies");
   const [showAll, setShowAll] = useState(false);
+  const [now, setNow] = useState<number | null>(null);
+
+  // Tick once a minute so a kick-off time rolls over to "In progress" on its own.
+  useEffect(() => {
+    setNow(Date.now());
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
 
   useEffect(() => {
     const load = () => fetch("/api/scores").then((r) => r.ok ? r.json() : null).then((d) => d && setData(d)).catch(() => {});
@@ -155,7 +170,7 @@ export function Scores({ initial }: { initial: ScoresPayload }) {
         <>
           <h3 className="subhead">Final scores</h3>
           {finals.length ? (
-            <div className="matches">{shown.map((m) => <MatchCard key={m.id} m={m} />)}</div>
+            <div className="matches">{shown.map((m) => <MatchCard key={m.id} m={m} now={now} />)}</div>
           ) : (
             <p className="notice">No {group.toLowerCase()} games have finished yet.</p>
           )}
@@ -168,7 +183,7 @@ export function Scores({ initial }: { initial: ScoresPayload }) {
           {next.length > 0 && (
             <>
               <h3 className="subhead">Up next</h3>
-              <div className="matches">{next.map((m) => <MatchCard key={m.id} m={m} />)}</div>
+              <div className="matches">{next.map((m) => <MatchCard key={m.id} m={m} now={now} />)}</div>
             </>
           )}
         </>
