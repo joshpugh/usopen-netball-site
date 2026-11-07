@@ -67,10 +67,8 @@ export function Header() {
         </a>
 
         <nav className="hdr__desk" aria-label="Main">
-          <ul>{NAV.map((n) => <li key={n.href}><a href={n.href}>{n.label}</a></li>)}</ul>
+          <ul>{NAV.filter((n) => n.primary).map((n) => <li key={n.href}><a href={n.href}>{n.label}</a></li>)}</ul>
         </nav>
-
-        <a className="uso-btn uso-btn--primary hdr__donate" href={EVENT.donateHref} target="_blank" rel="noopener">Donate</a>
 
         <ul className="hdr__social">
           {PRIMARY_SOCIAL.map((s) => (
@@ -81,6 +79,8 @@ export function Header() {
             </li>
           ))}
         </ul>
+
+        <a className="uso-btn uso-btn--primary hdr__donate" href={EVENT.donateHref} target="_blank" rel="noopener">Donate</a>
 
         <button
           ref={burgerRef}

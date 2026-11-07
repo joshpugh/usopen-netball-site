@@ -35,18 +35,22 @@ h1, h2, h3, p { margin: 0; }
 .hdr__burger:focus-visible, .hdr__panel a:focus-visible { outline-color: #fff; }
 .hdr__donate { flex: 0 0 auto; min-height: 40px; padding: 10px 16px; }
 
-/* Mobile: social icons and a burger sit in the top bar; the nav drops down below it. */
-.hdr__social, .hdr__burger, .hdr__scrim { display: none; }
+/* Social icons ride in the bar at every width: after the nav on desktop, pushed
+   right beside the burger on mobile. */
+.hdr__social { display: flex; align-items: center; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.hdr__social a { display: grid; place-items: center; width: 34px; height: 34px; color: var(--on-brand); border-radius: var(--radius-md); }
+.hdr__social a:hover { background: rgba(255,255,255,.12); }
+.hdr__social svg { display: block; width: 18px; height: 18px; }
+.hdr__burger, .hdr__scrim { display: none; }
 .hdr__panel[hidden] { display: none; }
 
 @media (max-width: 1080px) {
   .hdr__desk, .hdr__donate { display: none; }
   .hdr__bar { gap: var(--space-2); }
 
-  .hdr__social { display: flex; align-items: center; gap: 2px; margin: 0 0 0 auto; padding: 0; list-style: none; }
-  .hdr__social a { display: grid; place-items: center; width: 38px; height: 38px; color: var(--on-brand); border-radius: var(--radius-md); }
-  .hdr__social a:hover { background: rgba(255,255,255,.12); }
-  .hdr__social svg { display: block; width: 20px; height: 20px; }
+  .hdr__social { margin-left: auto; }
+  .hdr__social a { width: 38px; height: 38px; }   /* bigger tap targets on touch */
+  .hdr__social svg { width: 20px; height: 20px; }
 
   .hdr__burger { display: grid; place-items: center; flex: 0 0 auto; width: 44px; height: 44px; margin: 0; padding: 0; border: 0; border-radius: var(--radius-md); background: rgba(255,255,255,.14); color: var(--on-brand); cursor: pointer; }
   .hdr__burger:hover { background: rgba(255,255,255,.26); }

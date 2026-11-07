@@ -266,13 +266,16 @@ export const LEGAL = [
   { label: "Privacy Policy", href: "https://netballamerica.com/wp-content/uploads/Netball-America-Website-Privacy-Policy.pdf" },
 ];
 
-export const NAV = [
-  { label: "Watch", href: "/#watch" },
-  { label: "Scores", href: "/#scores" },
-  { label: "Event", href: "/#event" },
+// `primary` items show in the desktop bar, which also carries the social icons and
+// Donate. The rest are homepage sections you reach by scrolling; the mobile menu,
+// which has the room, still lists every one.
+export const NAV: { label: string; href: string; primary?: boolean }[] = [
+  { label: "Watch", href: "/#watch", primary: true },
+  { label: "Scores", href: "/#scores", primary: true },
+  { label: "Event", href: "/#event", primary: true },
   { label: "Stay", href: "/#stay" },
-  { label: "Results", href: "/results" },
-  { label: "Partners", href: "/#partners" },
+  { label: "Results", href: "/results", primary: true },
+  { label: "Partners", href: "/#partners", primary: true },
   { label: "Get involved", href: "/#get-involved" },
   { label: "Media", href: "/#media" },
 ];
