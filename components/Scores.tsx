@@ -25,7 +25,7 @@ function MatchCard({ m, now }: { m: Match; now: number | null }) {
         {final
           ? <span className="uso-badge uso-badge--final">Final</span>
           : started
-            ? <span className="uso-badge uso-badge--live">In progress</span>
+            ? <span className="uso-badge uso-badge--live">In play</span>
             : <span className="uso-badge uso-badge--upcoming">{fmtTime(m.start) || "Upcoming"}</span>}
       </div>
       <div className={rowCls(hw, aw)}><span className="uso-match__team">{m.home.team}</span><span className="uso-match__score">{m.home.score ?? "–"}</span></div>

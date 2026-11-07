@@ -28,6 +28,26 @@ two public pages are scraped with a headless browser and the output is served as
 
 Enable once: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 
+**What actually triggers it.** GitHub's own `schedule:` is best-effort — on a new
+repository it can take over an hour to start, and high-frequency crons get
+deprioritised under load. Ours missed four slots in a row. So a **Vercel Cron**
+(`vercel.json`) hits `/api/cron/scrape` every 10 minutes, and that route fires the
+workflow via `workflow_dispatch`. Vercel schedules, GitHub still runs the browser.
+The workflow keeps its own `schedule:` as a backstop; duplicate runs are harmless
+because the scraper only writes when the data changed and the workflow's concurrency
+group stops two publishing at once.
+
+Three environment variables in Vercel:
+
+| Variable | Purpose |
+|---|---|
+| `SCORES_PROVIDER` | `netballconnect` |
+| `CRON_SECRET` | Vercel sends it as `Authorization: Bearer …` to the cron route, which 401s without it |
+| `GITHUB_DISPATCH_TOKEN` | Fine-grained PAT, **this repo only**, **Actions: Read and write** — nothing else |
+
+Keep that token minimal. Don't reuse a personal OAuth token with `repo` scope: this
+one only needs to start a workflow, and it lives in a third-party service.
+
 **Scraper notes** (the non-obvious parts — see the script's comments for the rest)
 
 - `column=long` is mandatory on both URLs. The pages otherwise default to `column=short`,

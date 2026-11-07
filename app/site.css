@@ -224,3 +224,11 @@ h1, h2, h3, p { margin: 0; }
   .std .c-l { display: none; }
   .std__updated { display: none; }
 }
+
+/* Match card meta row: the badge must never wrap. "In play" is wider than "Final",
+   so let the court/division text truncate instead of pushing the badge onto line two. */
+.uso-match__meta { flex-wrap: nowrap; }
+.uso-match__meta > :first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.uso-match__meta .uso-badge { flex: 0 0 auto; white-space: nowrap; }
+.uso-match__meta .uso-badge--live { letter-spacing: .5px; padding-inline: 8px; }
+.uso-match__meta .uso-badge--live::before { width: 6px; height: 6px; }
