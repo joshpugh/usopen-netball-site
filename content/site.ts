@@ -17,8 +17,9 @@ export const EVENT = {
 // YouTube IDs. Override any of them in Vercel → Settings → Environment Variables without a redeploy of code.
 export const STREAMS = {
   day1: process.env.NEXT_PUBLIC_STREAM_DAY1 || "sgTG8qF8O-Q", // "Day One — U.S. Open Netball Championships® 2026"
-  day2: process.env.NEXT_PUBLIC_STREAM_DAY2 || "", // set on Sunday morning
-  replaysPlaylist: "PLPrq7rIyRyfJMKg_uGk03hfteVsN6rOEU", // 2025 broadcast playlist
+  day2: process.env.NEXT_PUBLIC_STREAM_DAY2 || "7rPnN9dI23M", // Sunday morning
+  finals: process.env.NEXT_PUBLIC_STREAM_FINALS || "50DAhDQHCwE", // Sunday afternoon
+  replaysPlaylist: "PLPrq7rIyRyfJMKg_uGk03hfteVsN6rOEU", // 2025 playlist — still used on /results
   invitation: "kagSnDZSgqk", // "Invitation to the 2026 U.S. Open"
   meetTheTeams: "XsupSCREpR0", // "Meet your 2026 U.S. Open teams!"
   testimonial: "LzwknsyOnos", // "2025 U.S. Open Testimonial"
@@ -26,6 +27,15 @@ export const STREAMS = {
 };
 
 // Broadcast windows (Pacific). Used for the LIVE badge and the default tab.
+// Per-broadcast windows (Pacific), which the LIVE badge and the default tab read.
+// Day Two covers the morning session; the Finals stream premieres at 1:00 PM, as
+// stated on its own YouTube listing.
+export const STREAM_WINDOWS = {
+  day1: { from: "2026-11-07T08:00:00-08:00", to: "2026-11-07T19:00:00-08:00" },
+  day2: { from: "2026-11-08T07:30:00-08:00", to: "2026-11-08T13:00:00-08:00" },
+  finals: { from: "2026-11-08T13:00:00-08:00", to: "2026-11-08T16:00:00-08:00" },
+};
+
 export const DAYS = [
   { id: "fri", label: "Fri", title: "Clinics & meetings", date: "2026-11-06", detail: "Afternoon meetings, clinics and training" },
   { id: "sat", label: "Sat", title: "Day One", date: "2026-11-07", detail: "Games begin at 8:20 AM", live: { from: "2026-11-07T08:00:00-08:00", to: "2026-11-07T19:00:00-08:00" } },

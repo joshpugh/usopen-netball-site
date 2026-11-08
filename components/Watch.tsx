@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
-import { DAYS, STREAMS } from "@/content/site";
+import { DAYS, STREAMS, STREAM_WINDOWS } from "@/content/site";
 
-type Tab = "sat" | "sun" | "replays";
+type Tab = "sat" | "day2" | "finals";
 
 function isLive(from?: string, to?: string, now = Date.now()) {
   return !!from && !!to && now >= Date.parse(from) && now <= Date.parse(to);
@@ -15,23 +15,26 @@ export function Watch() {
   useEffect(() => {
     const n = Date.now();
     setNow(n);
-    if (n >= Date.parse("2026-11-08T00:00:00-08:00")) setTab("sun");
+    // Sunday carries two broadcasts: open on whichever one the clock is in.
+    if (n >= Date.parse(STREAM_WINDOWS.finals.from)) setTab("finals");
+    else if (n >= Date.parse(STREAM_WINDOWS.day2.from)) setTab("day2");
     const id = setInterval(() => setNow(Date.now()), 60_000);
     return () => clearInterval(id);
   }, []);
 
-  const sat = DAYS[1], sun = DAYS[2];
-  const live = now !== null && ((tab === "sat" && isLive(sat.live?.from, sat.live?.to, now)) || (tab === "sun" && isLive(sun.live?.from, sun.live?.to, now)));
-  const videoId = tab === "sat" ? STREAMS.day1 : tab === "sun" ? STREAMS.day2 : "";
-  const src = tab === "replays"
-    ? `https://www.youtube.com/embed/videoseries?list=${STREAMS.replaysPlaylist}`
-    : videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&rel=0` : "";
-  const title = tab === "sat" ? "Day One · Saturday, November 7" : tab === "sun" ? "Finals Day · Sunday, November 8" : "2025 broadcast replays";
+  // Each broadcast has its own window: Finals must not read LIVE while Day Two is on.
+  const win = tab === "sat" ? STREAM_WINDOWS.day1 : tab === "day2" ? STREAM_WINDOWS.day2 : STREAM_WINDOWS.finals;
+  const live = now !== null && isLive(win.from, win.to, now);
+  const videoId = tab === "sat" ? STREAMS.day1 : tab === "day2" ? STREAMS.day2 : STREAMS.finals;
+  const src = videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1&rel=0` : "";
+  const title = tab === "sat"
+    ? "Day One · Saturday, November 7"
+    : tab === "day2" ? "Day Two · Sunday, November 8" : "Finals · Sunday, November 8";
 
   const tabs: { id: Tab; label: string }[] = [
     { id: "sat", label: "Sat · Day One" },
-    { id: "sun", label: "Sun · Finals" },
-    { id: "replays", label: "2025 replays" },
+    { id: "day2", label: "Sun · Day Two" },
+    { id: "finals", label: "Sun · Finals" },
   ];
 
   return (
@@ -43,7 +46,7 @@ export function Watch() {
           ) : (
             <div className="uso-stream__poster">
               <div>
-                Finals Day stream goes up Sunday morning
+                This stream goes up shortly before play
                 <div style={{ fontFamily: "var(--font-sans)", textTransform: "none", fontSize: 16, fontWeight: 500, marginTop: 12, letterSpacing: 0 }}>
                   <a href={STREAMS.channel} target="_blank" rel="noopener" style={{ color: "var(--on-stage)" }}>Follow NetballUSA on YouTube</a> to get notified.
                 </div>
