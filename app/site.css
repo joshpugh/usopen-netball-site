@@ -232,3 +232,10 @@ h1, h2, h3, p { margin: 0; }
 .uso-match__meta .uso-badge { flex: 0 0 auto; white-space: nowrap; }
 .uso-match__meta .uso-badge--live { letter-spacing: .5px; padding-inline: 8px; }
 .uso-match__meta .uso-badge--live::before { width: 6px; height: 6px; }
+
+/* The winner marker is a ::after on the team name, preceded by a normal space, so the
+   line can break right before it and strand the glyph on a line of its own (worst with
+   long names like "San Francisco Stars - Ladies"). A non-breaking space glues it to the
+   last word; the name itself still wraps. Override, not an edit: components.css is
+   a vendored copy of the design system. */
+.uso-match__row--won .uso-match__team::after { content: "\0000A0\0025C2"; }
