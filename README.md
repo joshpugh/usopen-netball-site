@@ -82,3 +82,39 @@ Set `NEXT_PUBLIC_STREAM_DAY2` to Sunday's YouTube video ID when Netball America 
 npm install
 npm run dev
 ```
+
+## After the tournament
+
+The 2026 event is over, so the scraping is **dormant, not deleted** — every piece is
+still in the repo and re-arming it is a few minutes:
+
+| What | State | Re-arm |
+|---|---|---|
+| `.github/workflows/scrape.yml` | disabled | `gh workflow enable scrape.yml` |
+| Vercel Cron | removed (`vercel.json` deleted) | recreate `vercel.json` with a `crons` entry for `/api/cron/scrape` |
+| `/api/cron/scrape` | still deployed | nothing — it 401s without `CRON_SECRET` and 503s without `GITHUB_DISPATCH_TOKEN` |
+| `CRON_SECRET` | still set | left deliberately, so the route stays locked while idle |
+| `GITHUB_DISPATCH_TOKEN` | never set | fine-grained PAT, this repo only, Actions: Read and write |
+
+The published feed on GitHub Pages stays up and frozen at the final results, so the
+site keeps rendering the completed 2026 competition with no moving parts.
+
+### For 2027
+
+Every competition identifier changes. Override these rather than editing the script —
+read the new values off the public ladder URL after picking the competition and group
+in NetballConnect's own dropdowns:
+
+`NC_ORG_KEY`, `NC_COMP_KEY`, `NC_YEAR_ID`, `NC_DIVISION_LADIES`, `NC_DIVISION_MIXED`
+
+2026's were: org `d04c4ad3-d2ae-403c-8d31-637bc1fd3e4a`, competition
+`18ae8f74-51e4-4a5d-8ce8-09aaae90220f`, year `8`, Ladies `34705`, Mixed `34704`, and
+**Playoffs `35741`** — the third group the original handover never captured. The
+scraper only reads Ladies and Mixed; in 2026 the deciding rounds were added to those
+two divisions, so the final ladder came out complete, but the Playoffs bracket itself
+was never scraped. Worth deciding up front next year.
+
+Note that GitHub's own `schedule:` trigger proved unreliable throughout: it fired three
+times in the first seventeen hours against a `*/10` schedule, then settled at roughly
+once every seven hours. That is why the Vercel Cron exists. Don't rely on `schedule:`
+alone for live scores.
