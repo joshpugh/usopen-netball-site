@@ -58,6 +58,17 @@ one only needs to start a workflow, and it lives in a third-party service.
 - A score of `0 : 0` means **in progress**, not a result. A match shows `-` until scoring
   opens and `0 : 0` the moment it does. The ladder's Played column confirms it, and the
   script cross-checks the two pages against each other on every run.
+- Read each score from **its own cell**, never with a regex over the row's text — that
+  matches the kick-off time instead, so `06:45 PM` parses as a 6–45 scoreline. It
+  silently corrupted 30 of 66 rows before it was caught.
+- **The page renders kick-off times in the *browser's* timezone, not the venue's.** This
+  is the one that will bite you: it is invisible from a Pacific laptop and wrong from any
+  CI runner. A UTC runner rendered an 08:00 PST game as 16:00, the parser stamped
+  `-08:00` on it, and every published fixture was 8 hours late — which surfaced as "Up
+  next" offering games at 10:30 PM. `openPage` forces `timezoneId: EVENT_TZ`
+  (`America/Los_Angeles`) and `OFFSETS` accepts only PST/PDT, throwing on anything else.
+  **Test any timezone change with `TZ=UTC node scripts/scrape-netballconnect.mjs`**, never
+  from your own machine.
 - Guards: it refuses to publish a table with no rows, a missing team name, or fewer
   completed games than last time, keeping the last good file instead.
 
